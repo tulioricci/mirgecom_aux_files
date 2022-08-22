@@ -15,6 +15,11 @@
 
       new_order : polynomial order
       dim : 2 or 3D
+      
+      ncoll : number of colocation points per cell (based on polynomial order)
+        4 for p=1
+        6 for p=2
+        and so on...
     
       old_casename :: casename of the old solution file
       new_casename :: new casename... If you want to keep the previous name, rename to previous case to something else like "my_case" -> "my_case_old"
