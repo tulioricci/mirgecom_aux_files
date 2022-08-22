@@ -1,0 +1,20 @@
+    - Submit with "mpiexec -n X" where X is the number of ranks used in the previous case.
+      It currently doesn't support change number of ranks
+      
+    - Not supposed to be an efficient code. We may have to revisit that if it is taking too long.
+    
+    - Parameters:
+    
+      new_gridfile = "mesh_v22m.msh" #file created by gmsh without partitioning
+    
+      step = 0 #step of the old solution file
+    
+      is_mixture = True #unless False
+      nspecies = 7 #useless if ix_mixture == False
+      species_names = ['C2H4', 'O2', 'CO2', 'CO', 'H2O', 'H2', 'N2'] #useless if ix_mixture == False
+
+      new_order : polynomial order
+      dim : 2 or 3D
+    
+      old_casename :: casename of the old solution file
+      new_casename :: new casename... If you want to keep the previous name, rename to previous case to something else like "my_case" -> "my_case_old"
