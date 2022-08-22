@@ -195,146 +195,6 @@ class InterpolateData:
             new_temp
         )
 
-#class InterpolateData:
-
-#    def __init__(self, dim=2):
-#        self._dim = dim
-
-#    def __call__(self, actx, old_soln, old_tseed, old_grid, new_grid,
-#                 is_mixture=False):
-
-#        if old_grid.shape != (self._dim,):
-#            raise ValueError(f"Position vector has unexpected dimensionality,"
-#                             f" expected {self._dim}.")
-#        if new_grid.shape != (self._dim,):
-#            raise ValueError(f"Position vector has unexpected dimensionality,"
-#                             f" expected {self._dim}.")
-
-#        old_x = old_grid[:,0]
-#        old_y = old_grid[:,1]
-
-#        old_mass = old_soln.mass
-#        old_momX = old_soln.momentum[0]
-#        old_momY = old_soln.momentum[1]
-#        old_ener = old_soln.energy
-#        old_tseed = old_tseed
-
-#        new_x = (new_grid[0][0]).reshape(1,-1)
-#        new_y = (new_grid[1][0]).reshape(1,-1)
-#       
-#        ngrid = (new_grid[0][0]).shape[ 0]
-#        ncoll = (new_grid[0][0]).shape[-1]
-#    
-#        from scipy.interpolate import griddata
-#        from meshmode.dof_array import DOFArray  
-
-#        print(ngrid)
-#        print(ncoll)
-
-#        print((old_x, old_y))
-#        print((new_x[0], new_y[0]))
-
-#        tic = time.time()
-#        print('Interpolating temperature')
-##        new_temp = DOFArray(actx, data=(actx.from_numpy( 
-##                   griddata((old_x[:], old_y[:]), old_tseed[:], 
-##                            (new_x[:], new_y[:]),
-##                            method='linear').reshape(ngrid,ncoll) ),
-##                   ))
-#        new_temp = griddata((old_x, old_y), old_tseed, (new_x[0], new_y[0]),
-#                            method='linear')
-#        toc = time.time()
-#        print(toc - tic, 's')
-
-
-#        sys.exit()
-
-#        print(new_temp)
-#        sys.exit()
-
-#        tic = time.time()
-#        print('Interpolating mass')
-#        new_mass = DOFArray(actx, data=(actx.from_numpy( 
-#                   griddata((old_x[:,0], old_y[:,0]), old_mass[:,0], 
-#                            (new_x[:,0], new_y[:,0]),
-#                            method='linear').reshape(ngrid,ncoll) ),
-#                   ))
-#        toc = time.time()
-#        print(toc - tic, 's')
-
-#        tic = time.time()
-#        print('Interpolating momentum X')
-#        new_momX = DOFArray(actx, data=(actx.from_numpy( 
-#                   griddata((old_x[:,0], old_y[:,0]), old_momX[:,0], 
-#                            (new_x[:,0], new_y[:,0]),
-#                            method='linear').reshape(ngrid,ncoll) ),
-#                   ))
-#        toc = time.time()
-#        print(toc - tic, 's')
-
-#        tic = time.time()
-#        print('Interpolating momentum Y')
-#        new_momY = DOFArray(actx, data=(actx.from_numpy( 
-#                   griddata((old_x[:,0], old_y[:,0]), old_momY[:,0],
-#                            (new_x[:,0], new_y[:,0]),
-#                            method='linear').reshape(ngrid,ncoll) ),
-#                   ))
-#        toc = time.time()
-#        print(toc - tic, 's')
-
-#        if self._dim == 2:
-#            new_momentum = make_obj_array([new_momX, new_momY])
-#        else:
-#            tic = time.time()
-#            print('Interpolating momentum Z')
-#            new_momY = DOFArray(actx, data=(actx.from_numpy( 
-#                       griddata((old_x[:,0], old_y[:,0]), old_momY[:,0],
-#                                (new_x[:,0], new_y[:,0]),
-#                                method='linear').reshape(ngrid,ncoll) ),
-#                       ))
-#            toc = time.time()
-#            print(toc - tic, 's')
-
-#            new_momentum = make_obj_array([new_momX, new_momY, new_momZ])
-
-#        tic = time.time()
-#        print('Interpolating energy')
-#        new_ener = DOFArray(actx, data=(actx.from_numpy( 
-#                   griddata((old_x[:,0], old_y[:,0]), old_ener[:,0], 
-#                            (new_x[:,0], new_y[:,0]),
-#                            method='linear').reshape(ngrid,ncoll) ),
-#                   ))
-#        toc = time.time()
-#        print(toc - tic, 's')
-
-
-#        if is_mixture:
-#            nspecies = len(old_soln.species_mass)
-
-#            old_spec = make_obj_array([
-#                           actx.to_numpy(old_soln.species_mass[i][0]).reshape(-1,1)
-#                           for i in range(nspecies)])
-#        
-#            tic = time.time()
-#            print('Interpolating all species')
-#            new_spec = make_obj_array([
-#                   DOFArray(actx, data=(actx.from_numpy( 
-#                            griddata((old_x[:,0], old_y[:,0]), old_spec[i][:,0], 
-#                                     (new_x[:,0], new_y[:,0]),
-#                                     method='linear').reshape(ngrid,ncoll) ),
-#                   ))
-#            for i in range(nspecies)])
-#            toc = time.time()
-#            print(toc - tic, 's')
-#        else:
-#            new_spec = np.empty((0,), dtype=object)
-#        
-
-#        return (
-#            make_conserved(dim=self._dim, mass=new_mass, energy=new_ener,
-#                           momentum=new_momentum, species_mass=new_spec),
-#            new_temp
-#        )
 
 def get_mesh(dim, mesh_filename, read_mesh=True):
     """Get the mesh."""
@@ -404,6 +264,8 @@ def main(actx_class, ctx_factory=cl.create_some_context, casename=None):
     new_order = 2
     dim = 2
     
+    ncoll = 6
+
     step = str('%06i' % step)
     old_casename = "burner"
     new_casename = "interp"
@@ -486,7 +348,6 @@ def main(actx_class, ctx_factory=cl.create_some_context, casename=None):
     
         kk += 1
 
-    ncoll = 6
     ngrid = int(old_coordX.shape[0]/ncoll)
  
     from meshmode.dof_array import DOFArray    
